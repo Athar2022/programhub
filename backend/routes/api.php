@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\OrganizationController;
+use App\Http\Controllers\Api\ProgramController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\OrganizationController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/programs', [ProgramController::class, 'index']);
+Route::get('/programs/{program}', [ProgramController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -22,6 +26,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/organizations', [OrganizationController::class, 'store']);
         Route::patch('/organizations/{organization}', [OrganizationController::class, 'update']);
         Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy']);
-    });
 
+        Route::post('/organizations/{organization}/programs', [ProgramController::class, 'store']);
+        Route::patch('/programs/{program}', [ProgramController::class, 'update']);
+        Route::delete('/programs/{program}', [ProgramController::class, 'destroy']);
+    });
 });

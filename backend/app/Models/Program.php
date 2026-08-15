@@ -31,11 +31,12 @@ class Program extends Model
         return [
             'application_start' => 'datetime',
             'application_deadline' => 'datetime',
-            'start_date' => 'datetime',
-            'end_date' => 'datetime',
+            'start_date' => 'date',
+            'end_date' => 'date',
             'capacity' => 'integer',
         ];
     }
+
 
 
     // The organization that manages the program
