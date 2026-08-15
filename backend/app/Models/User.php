@@ -19,12 +19,21 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory;
 
+    public const ROLE_APPLICANT = 'applicant';
+    public const ROLE_ORGANIZATION = 'organization';
+    public const ROLE_PLATFORM_ADMIN = 'platform_admin';
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
     }
 
     // The applicant profile owned by the user
