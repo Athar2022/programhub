@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\ProgramController;
@@ -22,6 +23,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/organizations', [OrganizationController::class, 'index']);
     Route::get('/organizations/{organization}', [OrganizationController::class, 'show']);
 
+    Route::get('/applications', [ApplicationController::class, 'index']);
+    Route::get('/applications/{application}', [ApplicationController::class, 'show']);
+    Route::post('/programs/{program}/applications', [ApplicationController::class, 'store']);
+    Route::patch('/applications/{application}', [ApplicationController::class, 'update']);
+    Route::post('/applications/{application}/submit', [ApplicationController::class, 'submit']);
+    Route::delete('/applications/{application}', [ApplicationController::class, 'destroy']);
+
     Route::middleware('role:organization,platform_admin')->group(function (): void {
         Route::post('/organizations', [OrganizationController::class, 'store']);
         Route::patch('/organizations/{organization}', [OrganizationController::class, 'update']);
@@ -30,5 +38,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/organizations/{organization}/programs', [ProgramController::class, 'store']);
         Route::patch('/programs/{program}', [ProgramController::class, 'update']);
         Route::delete('/programs/{program}', [ProgramController::class, 'destroy']);
+
+        Route::patch('/applications/{application}/review', [ApplicationController::class, 'review']);
     });
 });
