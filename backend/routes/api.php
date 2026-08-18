@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\ProgramController;
+use App\Http\Controllers\Api\DocumentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -41,4 +42,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
         Route::patch('/applications/{application}/review', [ApplicationController::class, 'review']);
     });
+
+    Route::get('/applications/{application}/documents', [DocumentController::class, 'index']);
+    Route::post('/applications/{application}/documents', [DocumentController::class, 'store']);
+    Route::get('/documents/{document}', [DocumentController::class, 'show']);
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
 });
