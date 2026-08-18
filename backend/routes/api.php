@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProgramController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -57,6 +58,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/organizations/{organization}/subscriptions', [SubscriptionController::class, 'store']);
     Route::get('/subscriptions/{subscription}', [SubscriptionController::class, 'show']);
     Route::patch('/subscriptions/{subscription}', [SubscriptionController::class, 'update']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::get('/notifications/{notification}', [NotificationController::class, 'show']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 
 });
 
