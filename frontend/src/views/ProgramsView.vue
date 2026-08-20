@@ -41,7 +41,10 @@ onMounted(loadPrograms)
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <RouterLink to="/" class="text-xl font-bold text-teal-700">ProgramHub</RouterLink>
         <div class="flex items-center gap-4">
-          <RouterLink to="/dashboard" class="text-sm font-semibold text-slate-600 hover:text-teal-700">
+          <RouterLink
+            to="/dashboard"
+            class="text-sm font-semibold text-slate-600 hover:text-teal-700"
+          >
             لوحة التحكم
           </RouterLink>
           <RouterLink
@@ -122,7 +125,10 @@ onMounted(loadPrograms)
               <span>{{ program.organization?.name || 'جهة غير محددة' }}</span>
             </p>
             <p class="flex items-center gap-3">
-              <i class="fa-solid fa-location-dot w-4 text-center text-teal-600" aria-hidden="true"></i>
+              <i
+                class="fa-solid fa-location-dot w-4 text-center text-teal-600"
+                aria-hidden="true"
+              ></i>
               <span>{{ program.location || 'الموقع غير محدد' }}</span>
             </p>
             <p class="flex items-center gap-3">
@@ -130,17 +136,30 @@ onMounted(loadPrograms)
               <span>{{ program.delivery_mode || 'طريقة التنفيذ غير محددة' }}</span>
             </p>
             <p class="flex items-center gap-3">
-              <i class="fa-solid fa-calendar-days w-4 text-center text-teal-600" aria-hidden="true"></i>
+              <i
+                class="fa-solid fa-calendar-days w-4 text-center text-teal-600"
+                aria-hidden="true"
+              ></i>
               <span>آخر موعد: {{ formatDate(program.application_deadline) }}</span>
             </p>
           </div>
 
-          <div class="mt-6 flex items-center justify-between border-t border-slate-100 pt-5 text-sm">
-            <span class="font-semibold text-slate-500">
-              <i class="fa-solid fa-users ml-1 text-teal-600" aria-hidden="true"></i>
-              {{ program.capacity || 'غير محددة' }} مقعد
-            </span>
-            <span class="font-semibold text-emerald-700">منشور</span>
+          <div class="mt-6 border-t border-slate-100 pt-5">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-semibold text-slate-500">
+                <i class="fa-solid fa-users ml-1 text-teal-600" aria-hidden="true"></i>
+                {{ program.capacity || 'غير محددة' }} مقعد
+              </span>
+              <span class="font-semibold text-emerald-700">منشور</span>
+            </div>
+
+            <RouterLink
+              :to="{ name: 'program-details', params: { program: program.id } }"
+              class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-teal-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-800"
+            >
+              عرض التفاصيل
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </RouterLink>
           </div>
         </article>
       </div>
