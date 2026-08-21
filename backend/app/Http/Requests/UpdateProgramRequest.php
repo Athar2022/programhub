@@ -40,6 +40,7 @@ class UpdateProgramRequest extends FormRequest
             'start_date' => ['sometimes', 'nullable', 'date'],
             'end_date' => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
             'capacity' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'status' => ['sometimes', 'string', 'in:draft,published'],
         ];
     }
 }

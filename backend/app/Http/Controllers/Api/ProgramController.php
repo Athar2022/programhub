@@ -9,6 +9,8 @@ use App\Models\Organization;
 use App\Models\Program;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+
 
 class ProgramController extends Controller
 {
@@ -27,6 +29,23 @@ class ProgramController extends Controller
 
         return response()->json($programs);
     }
+
+    public function organizationIndex(
+        Request $request,
+        Organization $organization,
+    ): JsonResponse {
+        Gate::authorize('create', [Program::class, $organization]);
+
+        $perPage = min(max($request->integer('per_page', 15), 1), 100);
+
+        $programs = $organization->programs()
+            ->with('organization')
+            ->latest('created_at')
+            ->paginate($perPage);
+
+        return response()->json($programs);
+    }
+
 
     /**
      * Store a newly created program for an organization.
