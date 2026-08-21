@@ -15,8 +15,20 @@ async function create(programId, payload) {
   return response.data
 }
 
+async function update(applicationId, payload) {
+  const response = await api.patch(`/applications/${applicationId}`, payload)
+  return response.data
+}
+
+async function submit(applicationId) {
+  const response = await api.post(`/applications/${applicationId}/submit`)
+  return response.data
+}
+
 export default {
   list,
   show,
   create,
+  update,
+  submit,
 }
