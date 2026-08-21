@@ -3,23 +3,141 @@ import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import notificationsService from '../services/notifications'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 const showRegistrationSuccess = ref(route.query.registered === '1')
+const notifications = ref([])
+const unreadCount = ref(0)
+const notificationsLoading = ref(false)
+const notificationsError = ref(null)
+const markingNotificationId = ref(null)
+const markingAllAsRead = ref(false)
 
-onMounted(async () => {
-  if (!showRegistrationSuccess.value) {
+function getNotificationData(notification) {
+  if (typeof notification.data === 'string') {
+    try {
+      return JSON.parse(notification.data)
+    } catch {
+      return {}
+    }
+  }
+
+  return notification.data ?? {}
+}
+
+function notificationTitle(notification) {
+  const data = getNotificationData(notification)
+
+  return data.title ?? notification.title ?? 'إشعار جديد'
+}
+
+function notificationMessage(notification) {
+  const data = getNotificationData(notification)
+
+  return data.message ?? data.body ?? notification.message ?? 'لديك إشعار جديد في ProgramHub.'
+}
+
+function formatNotificationDate(value) {
+  if (!value) {
+    return 'تاريخ غير محدد'
+  }
+
+  return new Intl.DateTimeFormat('ar-SA', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value))
+}
+
+function normalizeNotifications(response) {
+  const payload = response.notifications ?? response.data ?? []
+
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  return payload.data ?? []
+}
+
+async function loadNotifications() {
+  notificationsLoading.value = true
+  notificationsError.value = null
+
+  try {
+    const response = await notificationsService.list()
+    notifications.value = normalizeNotifications(response)
+    unreadCount.value = response.unread_count ?? notifications.value.filter((item) => !item.read_at).length
+  } catch (exception) {
+    notificationsError.value =
+      exception.response?.data?.message ?? 'تعذر تحميل الإشعارات حاليًا.'
+  } finally {
+    notificationsLoading.value = false
+  }
+}
+
+async function markNotificationAsRead(notification) {
+  if (notification.read_at) {
     return
   }
 
-  window.setTimeout(() => {
-    showRegistrationSuccess.value = false
-  }, 4000)
+  markingNotificationId.value = notification.id
+  notificationsError.value = null
 
-  await router.replace({ name: 'dashboard' })
+  try {
+    const response = await notificationsService.markAsRead(notification.id)
+
+    if (response.notification) {
+      Object.assign(notification, response.notification)
+    } else {
+      notification.read_at = new Date().toISOString()
+    }
+
+    unreadCount.value = notifications.value.filter((item) => !item.read_at).length
+  } catch (exception) {
+    notificationsError.value =
+      exception.response?.data?.message ?? 'تعذر تعليم الإشعار كمقروء حاليًا.'
+  } finally {
+    markingNotificationId.value = null
+  }
+}
+
+async function markAllNotificationsAsRead() {
+  if (!unreadCount.value) {
+    return
+  }
+
+  markingAllAsRead.value = true
+  notificationsError.value = null
+
+  try {
+    await notificationsService.markAllAsRead()
+    const readAt = new Date().toISOString()
+
+    notifications.value.forEach((notification) => {
+      notification.read_at = notification.read_at ?? readAt
+    })
+    unreadCount.value = 0
+  } catch (exception) {
+    notificationsError.value =
+      exception.response?.data?.message ?? 'تعذر تعليم جميع الإشعارات كمقروءة حاليًا.'
+  } finally {
+    markingAllAsRead.value = false
+  }
+}
+
+onMounted(async () => {
+  if (showRegistrationSuccess.value) {
+    window.setTimeout(() => {
+      showRegistrationSuccess.value = false
+    }, 4000)
+
+    await router.replace({ name: 'dashboard' })
+  }
+
+  await loadNotifications()
 })
 
 async function handleLogout() {
@@ -113,6 +231,115 @@ async function handleLogout() {
           </div>
         </div>
       </div>
+
+      <section class="mt-6 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="flex items-center gap-2 text-sm font-semibold text-teal-700">
+              <i class="fa-solid fa-bell" aria-hidden="true"></i>
+              الإشعارات
+            </p>
+            <h2 class="mt-2 text-2xl font-bold text-slate-950">آخر التنبيهات</h2>
+            <p class="mt-2 text-sm text-slate-600">
+              لديك {{ unreadCount }} إشعار غير مقروء.
+            </p>
+          </div>
+
+          <button
+            v-if="unreadCount > 0"
+            type="button"
+            :disabled="markingAllAsRead"
+            class="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-200 px-4 py-2.5 text-sm font-semibold text-teal-700 transition hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-60"
+            @click="markAllNotificationsAsRead"
+          >
+            <i
+              class="fa-solid"
+              :class="markingAllAsRead ? 'fa-spinner fa-spin' : 'fa-check-double'"
+              aria-hidden="true"
+            ></i>
+            {{ markingAllAsRead ? 'جارٍ التحديث...' : 'تعليم الكل كمقروء' }}
+          </button>
+        </div>
+
+        <div
+          v-if="notificationsError"
+          class="mt-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          role="alert"
+        >
+          <i class="fa-solid fa-circle-exclamation mt-0.5" aria-hidden="true"></i>
+          <p class="font-semibold">{{ notificationsError }}</p>
+        </div>
+
+        <div v-if="notificationsLoading" class="mt-6 space-y-3">
+          <div class="h-20 animate-pulse rounded-xl bg-slate-100"></div>
+          <div class="h-20 animate-pulse rounded-xl bg-slate-100"></div>
+        </div>
+
+        <div
+          v-else-if="notifications.length === 0"
+          class="mt-6 rounded-xl bg-slate-50 p-8 text-center text-sm text-slate-500 ring-1 ring-slate-200"
+        >
+          <i class="fa-regular fa-bell-slash mb-3 text-2xl text-slate-300" aria-hidden="true"></i>
+          <p>لا توجد إشعارات حاليًا.</p>
+        </div>
+
+        <div v-else class="mt-6 space-y-3">
+          <article
+            v-for="notification in notifications"
+            :key="notification.id"
+            class="rounded-xl border p-4 transition"
+            :class="
+              notification.read_at
+                ? 'border-slate-200 bg-white'
+                : 'border-teal-100 bg-teal-50/60'
+            "
+          >
+            <div class="flex items-start gap-3">
+              <span
+                class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                :class="notification.read_at ? 'bg-slate-100 text-slate-500' : 'bg-teal-100 text-teal-700'"
+              >
+                <i
+                  class="fa-solid"
+                  :class="notification.read_at ? 'fa-envelope-open' : 'fa-envelope'"
+                  aria-hidden="true"
+                ></i>
+              </span>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 class="font-bold text-slate-950">{{ notificationTitle(notification) }}</h3>
+                  <time class="text-xs text-slate-500">
+                    {{ formatNotificationDate(notification.created_at) }}
+                  </time>
+                </div>
+                <p class="mt-2 text-sm leading-6 text-slate-600">
+                  {{ notificationMessage(notification) }}
+                </p>
+
+                <button
+                  v-if="!notification.read_at"
+                  type="button"
+                  :disabled="markingNotificationId === notification.id"
+                  class="mt-3 inline-flex items-center gap-2 text-xs font-bold text-teal-700 transition hover:text-teal-900 disabled:cursor-not-allowed disabled:opacity-60"
+                  @click="markNotificationAsRead(notification)"
+                >
+                  <i
+                    class="fa-solid"
+                    :class="
+                      markingNotificationId === notification.id
+                        ? 'fa-spinner fa-spin'
+                        : 'fa-check'
+                    "
+                    aria-hidden="true"
+                  ></i>
+                  {{ markingNotificationId === notification.id ? 'جارٍ التحديث...' : 'تعليم كمقروء' }}
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
     </section>
   </main>
 </template>
