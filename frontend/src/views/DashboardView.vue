@@ -28,36 +28,35 @@ async function handleLogout() {
 }
 </script>
 
-
 <template>
   <main dir="rtl" class="min-h-screen bg-slate-50 text-slate-900">
     <Transition
-  enter-active-class="transition duration-300 ease-out"
-  enter-from-class="translate-y-[-12px] opacity-0"
-  enter-to-class="translate-y-0 opacity-100"
-  leave-active-class="transition duration-300 ease-in"
-  leave-from-class="translate-y-0 opacity-100"
-  leave-to-class="translate-y-[-12px] opacity-0"
->
-  <div
-    v-if="showRegistrationSuccess"
-    class="fixed right-4 top-4 z-50 flex w-[calc(100%-2rem)] max-w-sm items-center gap-3 rounded-xl border border-emerald-200 bg-white p-4 text-emerald-800 shadow-lg ring-1 ring-emerald-100 sm:right-6 sm:top-6"
-    role="alert"
-    aria-live="polite"
-  >
-    <i class="fa-solid fa-circle-check text-lg text-emerald-600" aria-hidden="true"></i>
-    <span class="flex-1 font-semibold">تم إنشاء الحساب بنجاح، مرحبًا بك في ProgramHub.</span>
-    <button
-      type="button"
-      class="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-      aria-label="إغلاق الإشعار"
-      title="إغلاق الإشعار"
-      @click="showRegistrationSuccess = false"
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="translate-y-[-12px] opacity-0"
+      enter-to-class="translate-y-0 opacity-100"
+      leave-active-class="transition duration-300 ease-in"
+      leave-from-class="translate-y-0 opacity-100"
+      leave-to-class="translate-y-[-12px] opacity-0"
     >
-      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-    </button>
-  </div>
-</Transition>
+      <div
+        v-if="showRegistrationSuccess"
+        class="fixed right-4 top-4 z-50 flex w-[calc(100%-2rem)] max-w-sm items-center gap-3 rounded-xl border border-emerald-200 bg-white p-4 text-emerald-800 shadow-lg ring-1 ring-emerald-100 sm:right-6 sm:top-6"
+        role="alert"
+        aria-live="polite"
+      >
+        <i class="fa-solid fa-circle-check text-lg text-emerald-600" aria-hidden="true"></i>
+        <span class="flex-1 font-semibold">تم إنشاء الحساب بنجاح، مرحبًا بك في ProgramHub.</span>
+        <button
+          type="button"
+          class="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          aria-label="إغلاق الإشعار"
+          title="إغلاق الإشعار"
+          @click="showRegistrationSuccess = false"
+        >
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+    </Transition>
 
     <header class="border-b border-slate-200 bg-white">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -91,6 +90,14 @@ async function handleLogout() {
           تم تسجيل دخولك بنجاح. سنضيف هنا إدارة البرامج والطلبات والإشعارات تدريجيًا.
         </p>
 
+        <RouterLink
+          to="/applications"
+          class="mt-8 inline-flex items-center gap-2 rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800"
+        >
+          <i class="fa-solid fa-file-signature" aria-hidden="true"></i>
+          عرض طلباتي
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        </RouterLink>
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
           <div class="rounded-xl bg-slate-50 p-5">
             <p class="text-sm text-slate-500">البريد الإلكتروني</p>
