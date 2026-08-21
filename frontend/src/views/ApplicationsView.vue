@@ -67,7 +67,10 @@ onMounted(loadApplications)
       <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <RouterLink to="/" class="text-xl font-bold text-teal-700">ProgramHub</RouterLink>
         <div class="flex items-center gap-4">
-          <RouterLink to="/dashboard" class="text-sm font-semibold text-slate-600 transition hover:text-teal-700">
+          <RouterLink
+            to="/dashboard"
+            class="text-sm font-semibold text-slate-600 transition hover:text-teal-700"
+          >
             لوحة التحكم
           </RouterLink>
           <RouterLink
@@ -96,7 +99,11 @@ onMounted(loadApplications)
           class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-teal-500 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
           @click="loadApplications"
         >
-          <i class="fa-solid" :class="loading ? 'fa-spinner fa-spin' : 'fa-rotate'" aria-hidden="true"></i>
+          <i
+            class="fa-solid"
+            :class="loading ? 'fa-spinner fa-spin' : 'fa-rotate'"
+            aria-hidden="true"
+          ></i>
           تحديث القائمة
         </button>
       </div>
@@ -153,7 +160,9 @@ onMounted(loadApplications)
         >
           <div class="flex items-start justify-between gap-4">
             <div class="flex items-start gap-3">
-              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+              <div
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700"
+              >
                 <i class="fa-solid fa-file-signature text-lg" aria-hidden="true"></i>
               </div>
               <div>
@@ -178,23 +187,37 @@ onMounted(loadApplications)
               <span>{{ application.program?.organization?.name || 'جهة غير محددة' }}</span>
             </p>
             <p class="flex items-center gap-3">
-              <i class="fa-solid fa-calendar-days w-4 text-center text-teal-600" aria-hidden="true"></i>
+              <i
+                class="fa-solid fa-calendar-days w-4 text-center text-teal-600"
+                aria-hidden="true"
+              ></i>
               <span>تاريخ الإنشاء: {{ formatDate(application.created_at) }}</span>
             </p>
             <p v-if="application.submitted_at" class="flex items-center gap-3">
-              <i class="fa-solid fa-paper-plane w-4 text-center text-teal-600" aria-hidden="true"></i>
+              <i
+                class="fa-solid fa-paper-plane w-4 text-center text-teal-600"
+                aria-hidden="true"
+              ></i>
               <span>تاريخ الإرسال: {{ formatDate(application.submitted_at) }}</span>
             </p>
           </div>
 
-          <div class="mt-6 border-t border-slate-100 pt-5">
+          <div class="mt-6 flex flex-wrap gap-4 border-t border-slate-100 pt-5">
+            <RouterLink
+              :to="{ name: 'application-details', params: { application: application.id } }"
+              class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 transition hover:text-teal-900"
+            >
+              عرض تفاصيل الطلب
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </RouterLink>
+
             <RouterLink
               v-if="application.program?.id"
               :to="{ name: 'program-details', params: { program: application.program.id } }"
-              class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 transition hover:text-teal-900"
+              class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-teal-700"
             >
               عرض البرنامج
-              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+              <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
             </RouterLink>
           </div>
         </article>
