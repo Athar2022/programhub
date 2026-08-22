@@ -25,6 +25,7 @@ class AuthController extends Controller
             'password' => $validated['password'],
         ]);
 
+        $user->load('organizations');
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
@@ -54,6 +55,7 @@ class AuthController extends Controller
             ], 403);
         }
 
+        $user->load('organizations');
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([

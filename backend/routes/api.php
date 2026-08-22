@@ -24,8 +24,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return $request->user()->load('organizations');
     });
+
 
     Route::get('/organizations', [OrganizationController::class, 'index']);
     Route::get('/organizations/{organization}', [OrganizationController::class, 'show']);
@@ -38,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/applications/{application}', [ApplicationController::class, 'destroy']);
 
     Route::middleware('role:organization,platform_admin')->group(function (): void {
+        Route::get('/organizations/{organization}/programs', [ProgramController::class, 'organizationIndex']);
         Route::post('/organizations', [OrganizationController::class, 'store']);
         Route::patch('/organizations/{organization}', [OrganizationController::class, 'update']);
         Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy']);
@@ -63,7 +65,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::get('/notifications/{notification}', [NotificationController::class, 'show']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
-
 });
 
 Route::middleware('role:platform_admin')->group(function (): void {

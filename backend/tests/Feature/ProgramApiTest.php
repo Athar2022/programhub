@@ -136,6 +136,104 @@ class ProgramApiTest extends TestCase
         ]);
     }
 
+
+    public function test_organization_owner_can_list_its_programs(): void
+    {
+        [$user, $organization] = $this->createOrganizationOwner();
+
+        Program::create([
+            'organization_id' => $organization->id,
+            'title' => 'Draft Program',
+            'type' => 'training',
+            'status' => 'draft',
+        ]);
+        Program::create([
+            'organization_id' => $organization->id,
+            'title' => 'Published Program',
+            'type' => 'grant',
+            'status' => 'published',
+        ]);
+        $this->createProgram();
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson("/api/organizations/{$organization->id}/programs");
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('data.0.organization_id', $organization->id)
+            ->assertJsonPath('data.1.organization_id', $organization->id);
+    }
+
+    public function test_an_applicant_cannot_list_organization_programs(): void
+    {
+        $user = User::factory()->create([
+            'role' => User::ROLE_APPLICANT,
+            'status' => 'active',
+        ]);
+        $organization = Organization::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/organizations/{$organization->id}/programs")
+            ->assertForbidden();
+    }
+
+    public function test_a_manager_from_another_organization_cannot_list_programs(): void
+    {
+        [$user] = $this->createOrganizationOwner();
+        $organization = Organization::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson("/api/organizations/{$organization->id}/programs")
+            ->assertForbidden();
+    }
+
+
+    public function test_organization_owner_can_publish_a_draft_program(): void
+    {
+        [$user, $organization] = $this->createOrganizationOwner();
+
+        $program = Program::create([
+            'organization_id' => $organization->id,
+            'title' => 'Program Ready to Publish',
+            'type' => 'training',
+            'status' => 'draft',
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->patchJson("/api/programs/{$program->id}", [
+                'status' => 'published',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('program.status', 'published');
+
+        $this->assertDatabaseHas('programs', [
+            'id' => $program->id,
+            'status' => 'published',
+        ]);
+    }
+
+    public function test_program_status_must_be_draft_or_published(): void
+    {
+        [$user, $organization] = $this->createOrganizationOwner();
+
+        $program = Program::create([
+            'organization_id' => $organization->id,
+            'title' => 'Program With Invalid Status',
+            'type' => 'training',
+            'status' => 'draft',
+        ]);
+
+        $this->actingAs($user, 'sanctum')
+            ->patchJson("/api/programs/{$program->id}", [
+                'status' => 'closed',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['status']);
+    }
+
     private function createProgram(array $attributes = []): Program
     {
         $organization = Organization::factory()->create();
