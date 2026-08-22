@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
@@ -16,6 +16,18 @@ const notificationsLoading = ref(false)
 const notificationsError = ref(null)
 const markingNotificationId = ref(null)
 const markingAllAsRead = ref(false)
+
+const canManageOrganizationPrograms = computed(() => {
+  const role = user.value?.role
+
+  if (role === 'organization' || role === 'platform_admin') {
+    return true
+  }
+
+  return user.value?.organizations?.some((organization) =>
+    ['owner', 'admin'].includes(organization.pivot?.role),
+  ) ?? false
+})
 
 function getNotificationData(notification) {
   if (typeof notification.data === 'string') {
@@ -208,14 +220,27 @@ async function handleLogout() {
           تم تسجيل دخولك بنجاح. سنضيف هنا إدارة البرامج والطلبات والإشعارات تدريجيًا.
         </p>
 
-        <RouterLink
-          to="/applications"
-          class="mt-8 inline-flex items-center gap-2 rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800"
-        >
-          <i class="fa-solid fa-file-signature" aria-hidden="true"></i>
-          عرض طلباتي
-          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-        </RouterLink>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <RouterLink
+            to="/applications"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-800"
+          >
+            <i class="fa-solid fa-file-signature" aria-hidden="true"></i>
+            عرض طلباتي
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+          </RouterLink>
+
+          <RouterLink
+            v-if="canManageOrganizationPrograms"
+            to="/organization/programs"
+            class="inline-flex items-center justify-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-5 py-3 text-sm font-semibold text-teal-800 transition hover:border-teal-300 hover:bg-teal-100"
+          >
+            <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+            إدارة برامج الجهة
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+          </RouterLink>
+        </div>
+
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
           <div class="rounded-xl bg-slate-50 p-5">
             <p class="text-sm text-slate-500">البريد الإلكتروني</p>
