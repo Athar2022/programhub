@@ -24,9 +24,23 @@ const canManageOrganizationPrograms = computed(() => {
     return true
   }
 
-  return user.value?.organizations?.some((organization) =>
-    ['owner', 'admin'].includes(organization.pivot?.role),
-  ) ?? false
+  return (
+    user.value?.organizations?.some((organization) =>
+      ['owner', 'admin'].includes(organization.pivot?.role),
+    ) ?? false
+  )
+})
+
+const canReviewOrganizationApplications = computed(() => {
+  if (user.value?.role === 'platform_admin') {
+    return true
+  }
+
+  return (
+    user.value?.organizations?.some((organization) =>
+      ['owner', 'admin', 'reviewer'].includes(organization.pivot?.role),
+    ) ?? false
+  )
 })
 
 function getNotificationData(notification) {
@@ -81,10 +95,10 @@ async function loadNotifications() {
   try {
     const response = await notificationsService.list()
     notifications.value = normalizeNotifications(response)
-    unreadCount.value = response.unread_count ?? notifications.value.filter((item) => !item.read_at).length
+    unreadCount.value =
+      response.unread_count ?? notifications.value.filter((item) => !item.read_at).length
   } catch (exception) {
-    notificationsError.value =
-      exception.response?.data?.message ?? 'تعذر تحميل الإشعارات حاليًا.'
+    notificationsError.value = exception.response?.data?.message ?? 'تعذر تحميل الإشعارات حاليًا.'
   } finally {
     notificationsLoading.value = false
   }
@@ -239,6 +253,15 @@ async function handleLogout() {
             إدارة برامج الجهة
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
           </RouterLink>
+          <RouterLink
+            v-if="canReviewOrganizationApplications"
+            to="/organization/applications"
+            class="inline-flex items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-800 transition hover:border-indigo-300 hover:bg-indigo-100"
+          >
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+            مراجعة طلبات المتقدمين
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+          </RouterLink>
         </div>
 
         <div class="mt-8 grid gap-4 sm:grid-cols-3">
@@ -265,9 +288,7 @@ async function handleLogout() {
               الإشعارات
             </p>
             <h2 class="mt-2 text-2xl font-bold text-slate-950">آخر التنبيهات</h2>
-            <p class="mt-2 text-sm text-slate-600">
-              لديك {{ unreadCount }} إشعار غير مقروء.
-            </p>
+            <p class="mt-2 text-sm text-slate-600">لديك {{ unreadCount }} إشعار غير مقروء.</p>
           </div>
 
           <button
@@ -314,15 +335,15 @@ async function handleLogout() {
             :key="notification.id"
             class="rounded-xl border p-4 transition"
             :class="
-              notification.read_at
-                ? 'border-slate-200 bg-white'
-                : 'border-teal-100 bg-teal-50/60'
+              notification.read_at ? 'border-slate-200 bg-white' : 'border-teal-100 bg-teal-50/60'
             "
           >
             <div class="flex items-start gap-3">
               <span
                 class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                :class="notification.read_at ? 'bg-slate-100 text-slate-500' : 'bg-teal-100 text-teal-700'"
+                :class="
+                  notification.read_at ? 'bg-slate-100 text-slate-500' : 'bg-teal-100 text-teal-700'
+                "
               >
                 <i
                   class="fa-solid"
@@ -352,13 +373,13 @@ async function handleLogout() {
                   <i
                     class="fa-solid"
                     :class="
-                      markingNotificationId === notification.id
-                        ? 'fa-spinner fa-spin'
-                        : 'fa-check'
+                      markingNotificationId === notification.id ? 'fa-spinner fa-spin' : 'fa-check'
                     "
                     aria-hidden="true"
                   ></i>
-                  {{ markingNotificationId === notification.id ? 'جارٍ التحديث...' : 'تعليم كمقروء' }}
+                  {{
+                    markingNotificationId === notification.id ? 'جارٍ التحديث...' : 'تعليم كمقروء'
+                  }}
                 </button>
               </div>
             </div>

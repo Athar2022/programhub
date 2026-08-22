@@ -33,7 +33,12 @@ const router = createRouter({
       component: () => import('../views/OrganizationProgramsView.vue'),
       meta: { requiresAuth: true },
     },
-
+    {
+      path: '/organization/applications',
+      name: 'organization-applications',
+      component: () => import('../views/OrganizationApplicationsView.vue'),
+      meta: { requiresAuth: true },
+    },
     {
       path: '/applications',
       name: 'applications',
