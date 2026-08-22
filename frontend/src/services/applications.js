@@ -25,10 +25,17 @@ async function submit(applicationId) {
   return response.data
 }
 
+async function review(applicationId, payload) {
+  const response = await api.patch(`/applications/${applicationId}/review`, payload)
+  return response.data
+}
+
+
 export default {
   list,
   show,
   create,
   update,
   submit,
+  review
 }
